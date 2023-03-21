@@ -1,12 +1,22 @@
-import { View, Text, StyleSheet, Image, Pressable } from "react-native";
-import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Pressable,
+  Button,
+  ScrollView,
+} from "react-native";
+import React, { useState } from "react";
 import FormikPostUploader from "./FormikPostUploader";
+import { ref, getStorage, getDownloadURL, listAll } from "firebase/storage";
 
 const AddNewPost = () => {
   return (
     <View style={styles.container}>
       <Header />
       <FormikPostUploader />
+      <GetPhotos />
     </View>
   );
 };
@@ -29,9 +39,50 @@ const Header = () => (
   </View>
 );
 
+const GetPhotos = () => {
+  const [photos, setPhotos] = useState([]);
+
+  const onAllPressHandler = async () => {
+    try {
+      const storage = getStorage();
+      const listRef = ref(storage, "images/");
+      const imageObj = await listAll(listRef);
+      imageObj.items.forEach(async (item) => {
+        const url = await getDownloadURL(ref(storage, item.fullPath));
+        setPhotos((prev) => [...prev, { imageUrl: url }]);
+      });
+    } catch (error) {
+      console.log(`There were errors ${error}`);
+    }
+  };
+
+  return (
+    <View style={{ flex: 1, justifyContent: "center", width: "100%" }}>
+      <Button title="get all photos" onPress={onAllPressHandler} />
+      <ScrollView style={{ paddingBottom: 80, width: "100%" }}>
+        {photos.map((photo, index) => (
+          <View key={index}>
+            <Image
+              source={{ uri: photo.imageUrl }}
+              style={{
+                width: "100%",
+                height: 300,
+                margin: 10,
+                resizeMode: "cover",
+                paddingBottom: 10,
+              }}
+            />
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 10,
+    flex: 1,
   },
   headerContainer: {
     flexDirection: "row",

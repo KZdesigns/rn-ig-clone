@@ -11,20 +11,23 @@ import React, { useState } from "react";
 import FormikPostUploader from "./FormikPostUploader";
 import { ref, getStorage, getDownloadURL, listAll } from "firebase/storage";
 
-const AddNewPost = () => {
+const AddNewPost = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Header />
+      <Header navigation={navigation} />
       <FormikPostUploader />
       <GetPhotos />
     </View>
   );
 };
 
-const Header = () => (
+const Header = ({ navigation }) => (
   <View style={styles.headerContainer}>
     <View style={styles.headerButtonContainer}>
-      <Pressable style={({ pressed }) => (pressed ? { opacity: 0.75 } : null)}>
+      <Pressable
+        style={({ pressed }) => (pressed ? { opacity: 0.75 } : null)}
+        onPress={() => navigation.navigate("Home")}
+      >
         <Image
           source={{
             uri: "https://img.icons8.com/ios-glyphs/90/ffffff/back.png",

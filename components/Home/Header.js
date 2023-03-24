@@ -24,6 +24,7 @@ const Header = ({ navigation }) => {
 
         <Pressable
           style={({ pressed }) => (pressed ? styles.logoPressed : null)}
+          onPress={() => navigation.navigate("test")}
         >
           <Image
             source={{

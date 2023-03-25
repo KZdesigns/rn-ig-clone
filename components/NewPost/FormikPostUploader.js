@@ -5,6 +5,7 @@ import { Formik } from "formik";
 import { Divider } from "react-native-elements";
 import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytes, getStorage } from "firebase/storage";
+import { getDatabase } from "firebase/database";
 
 const uploadPostSchema = Yup.object().shape({
   imageUrl: Yup.string().required("Select a photo."),
@@ -32,7 +33,7 @@ const FormikPostUploader = () => {
     }
   };
 
-  const submitHandler = async () => {
+  const submitHandler = async (values) => {
     try {
       const response = await fetch(pickedImage.uri);
       const blob = await response.blob();
@@ -50,7 +51,7 @@ const FormikPostUploader = () => {
   return (
     <Formik
       initialValues={{ caption: "", imageUrl: "" }}
-      onSubmit={submitHandler}
+      onSubmit={async (values) => submitHandler(values)}
       validationSchema={uploadPostSchema}
       validateOnMount={true}
     >

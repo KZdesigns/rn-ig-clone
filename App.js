@@ -8,6 +8,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { Provider } from "react-redux";
 import store from "./store/store";
 import PhotoScreen from "./screens/PhotoScreen";
+import NewPostForm from "./components/NewPostTest/NewPostForm";
+import ShowPhoto from "./screens/ShowPhoto";
 
 const Stack = createStackNavigator();
 
@@ -16,6 +18,8 @@ export default function App() {
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="test-form" component={NewPostForm} />
+          <Stack.Screen name="show-photos" component={ShowPhoto} />
           <Stack.Screen name="test" component={PhotoScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="New_Post_Screen" component={NewPostScreen} />

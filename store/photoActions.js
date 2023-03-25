@@ -22,7 +22,7 @@ export const fetchPhotoListData = () => {
         })
       );
     } catch (error) {
-      console.log(`${error}`);
+      console.log(`There was an error in photoAction.js: ${error}`);
     }
   };
 };

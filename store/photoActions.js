@@ -1,19 +1,16 @@
-import { ref, getStorage, getDownloadURL, listAll } from "firebase/storage";
 import { saveFile } from "./photoSlice";
+import getDatabaseObj from "../util/getDatabaseObj";
 
 export const fetchPhotoListData = () => {
   return async (dispatch) => {
     const fetchData = async () => {
-      const storage = getStorage();
-      const listRef = ref(storage, "images/");
-      const imageObj = await listAll(listRef);
-
-      const imageUrls = await Promise.all(
-        imageObj.items.map(async (item) => {
-          const url = await getDownloadURL(ref(storage, item.fullPath));
-          return url;
-        })
-      );
+      const data = await getDatabaseObj();
+      const dataArray = [data];
+      const imageUrls = dataArray.map((item) => {
+        const key = Object.keys(item)[0];
+        return item[key].imageUri;
+      });
+      console.log(imageUrls);
       return imageUrls;
     };
 

@@ -18,11 +18,11 @@ export default function App() {
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="test-form" component={NewPostForm} />
-          <Stack.Screen name="show-photos" component={ShowPhoto} />
+          {/* <Stack.Screen name="test-form" component={NewPostForm} />
+          <Stack.Screen name="show-photos" component={ShowPhoto} /> */}
           <Stack.Screen name="test" component={PhotoScreen} />
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="New_Post_Screen" component={NewPostScreen} />
+          {/* <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="New_Post_Screen" component={NewPostScreen} /> */}
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

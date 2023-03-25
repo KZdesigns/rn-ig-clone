@@ -12,7 +12,6 @@ const PhotoScreen = ({ navigation }) => {
     const unsubscribe = navigation.addListener("focus", () => {
       dispatch(fetchPhotoListData());
     });
-    console.log(photoUrlList);
     return () => {
       unsubscribe();
     };

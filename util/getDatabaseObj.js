@@ -5,6 +5,7 @@ const getDatabaseObj = async () => {
     const response = await axios.get(
       "https://react-native-app-a74a5-default-rtdb.firebaseio.com/images.json"
     );
+    console.log("making a call");
     return response.data;
   } catch (error) {
     console.log("There was an error in the getDatabaseObj: " + error);

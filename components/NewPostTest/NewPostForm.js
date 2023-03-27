@@ -104,7 +104,7 @@ const NewPostForm = ({ navigation }) => {
             />
             <Button
               title="view screen"
-              onPress={() => navigation.navigate("show-photos")}
+              onPress={() => navigation.navigate("test")}
             />
           </View>
         )}

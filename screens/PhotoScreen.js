@@ -7,14 +7,14 @@ const PhotoScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const photoUrlList = useSelector((state) => state.photoList.photos);
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", () => {
-      dispatch(fetchPhotoListData());
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, [navigation]);
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener("focus", () => {
+  //     dispatch(fetchPhotoListData());
+  //   });
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, [navigation]);
 
   const onPressHandler = () => {
     navigation.navigate("test-form");

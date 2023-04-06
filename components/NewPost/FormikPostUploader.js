@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import * as Yup from "yup";
 import { Formik } from "formik";
 import { Divider } from "react-native-elements";
-import { ImagePicker } from ‘expo’;
+import { ImagePicker } from "expo";
+import { useNavigation } from "@react-navigation/native";
 
 const uploadPostSchema = Yup.object().shape({
   imageUrl: Yup.string().url().required("A url is required."),
@@ -14,11 +15,15 @@ const PlaceHolderImage = "https://img.icons8.com/ios/256/FFFFFF/image.png";
 
 const FormikPostUploader = () => {
   const [thumbnailUrl, setThumbnailUrl] = useState(PlaceHolderImage);
+  const navigation = useNavigation();
 
   return (
     <Formik
       initialValues={{ caption: "", imageUrl: "" }}
-      onSubmit={(values) => console.log(values)}
+      onSubmit={(values) => {
+        console.log(values);
+        navigation.goBack();
+      }}
       validationSchema={uploadPostSchema}
       validateOnMount={true}
     >
@@ -84,10 +89,11 @@ export default FormikPostUploader;
 
 const styles = StyleSheet.create({});
 
-
-{/* <Button
+{
+  /* <Button
 icon="add-a-photo" mode="contained" style={styles.button}
 onPress={() => {this._pickImage(handleChange('image'))}}
 >Pick an image from camera roll</Button>
 {values.image && values.image.length > 0 ?
-<Image source={{ uri: values.image }} style={{ width: 200, height: 200 }} /> : null} */}
+<Image source={{ uri: values.image }} style={{ width: 200, height: 200 }} /> : null} */
+}

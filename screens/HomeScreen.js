@@ -9,10 +9,10 @@ import BottomTabs from "../components/Home/BottomTabs";
 
 // Notes for building safe area add padding around all edges this means views willl not stretch all the way left and right
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
-      <Header />
+      <Header navigation={navigation} />
       <Stories />
       <ScrollView>
         {POSTS.map((post, index) => (

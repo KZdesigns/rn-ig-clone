@@ -1,6 +1,6 @@
 import { Text, View, Image, StyleSheet, Pressable } from "react-native";
 
-const Header = () => {
+const Header = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Pressable style={({ pressed }) => (pressed ? styles.logoPressed : null)}>
@@ -12,6 +12,7 @@ const Header = () => {
       <View style={styles.iconsContainer}>
         <Pressable
           style={({ pressed }) => (pressed ? styles.logoPressed : null)}
+          onPress={() => navigation.push("NewPostScreen")}
         >
           <Image
             source={{

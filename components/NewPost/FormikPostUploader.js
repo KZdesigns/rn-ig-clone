@@ -135,14 +135,7 @@ const FormikPostUploader = () => {
       validationSchema={uploadPostSchema}
       validateOnMount={true}
     >
-      {({
-        handleBlur,
-        handleChange,
-        handleSubmit,
-        values,
-        errors,
-        isValid,
-      }) => (
+      {({ handleBlur, handleChange, handleSubmit, values, isValid }) => (
         <>
           <View
             style={{
@@ -164,7 +157,12 @@ const FormikPostUploader = () => {
             </Pressable>
 
             <TextInput
-              style={{ color: "white", fontSize: 20, marginTop: 12 }}
+              style={{
+                color: "white",
+                fontSize: 20,
+                marginTop: 12,
+                width: "75%",
+              }}
               placeholder="Write a caption"
               placeholderTextColor="gray"
               multiline={true}

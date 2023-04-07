@@ -3,15 +3,15 @@ import {
   Button,
   Image,
   StyleSheet,
-  Text,
   TextInput,
   View,
+  Pressable,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import * as Yup from "yup";
 import { Formik } from "formik";
 import { Divider } from "react-native-elements";
-import { ImagePicker } from "expo";
+import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "@react-navigation/native";
 import { db, auth } from "../../firebase";
 import {
@@ -22,9 +22,10 @@ import {
   doc,
   addDoc,
 } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
 
 const uploadPostSchema = Yup.object().shape({
-  imageUrl: Yup.string().url().required("A url is required."),
+  imageUrl: Yup.string().required("A url is required."),
   caption: Yup.string().max(2200, "Caption has reached the character limit."),
 });
 
@@ -33,6 +34,7 @@ const PlaceHolderImage = "https://img.icons8.com/ios/256/FFFFFF/image.png";
 const FormikPostUploader = () => {
   const [thumbnailUrl, setThumbnailUrl] = useState(PlaceHolderImage);
   const [currentLoggedInUser, setCurrentLoggedInUser] = useState(null);
+  const [pickedImage, setPickedImage] = useState(null);
   const navigation = useNavigation();
 
   //set the currentUserState
@@ -60,6 +62,25 @@ const FormikPostUploader = () => {
     getUserName();
   }, []);
 
+  //this send the image to the firestore
+  const saveImageInFireStore = async (storageRef) => {
+    try {
+      const response = await fetch(pickedImage.uri);
+      const blob = await response.blob();
+      await uploadBytes(storageRef, blob);
+      alert("Your post has been uploaded!");
+      setThumbnailUrl(PlaceHolderImage);
+    } catch (error) {
+      alert("There was an error try again!");
+      console.log(error);
+    }
+  };
+
+  const getUrlFromFireStore = async (storageRef) => {
+    const fireStoreImageUrl = await getDownloadURL(storageRef);
+    return fireStoreImageUrl;
+  };
+
   //this will need to upload the data to firestore
   const uploadPostToFirebase = async (imageUrl, caption) => {
     const data = {
@@ -86,11 +107,30 @@ const FormikPostUploader = () => {
     }
   };
 
+  const pickImage = async (handleChange) => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      handleChange(result.assets[0].uri);
+      setThumbnailUrl(result.assets[0].uri);
+      setPickedImage({ uri: result.assets[0].uri });
+    }
+  };
+
   return (
     <Formik
       initialValues={{ caption: "", imageUrl: "" }}
       onSubmit={async (values) => {
-        uploadPostToFirebase(values.imageUrl, values.caption);
+        const storage = getStorage();
+        const storageRef = ref(storage, `images/${Math.random()}`);
+        await saveImageInFireStore(storageRef);
+        const url = await getUrlFromFireStore(storageRef);
+        await uploadPostToFirebase(url, values.caption);
       }}
       validationSchema={uploadPostSchema}
       validateOnMount={true}
@@ -112,10 +152,16 @@ const FormikPostUploader = () => {
               flexDirection: "row",
             }}
           >
-            <Image
-              source={{ uri: thumbnailUrl ? thumbnailUrl : PlaceHolderImage }}
-              style={{ width: 100, height: 100, marginHorizontal: 10 }}
-            />
+            <Pressable
+              onPress={() => {
+                pickImage(handleChange("imageUrl"));
+              }}
+            >
+              <Image
+                source={{ uri: thumbnailUrl ? thumbnailUrl : PlaceHolderImage }}
+                style={{ width: 100, height: 100, marginHorizontal: 10 }}
+              />
+            </Pressable>
 
             <TextInput
               style={{ color: "white", fontSize: 20, marginTop: 12 }}
@@ -128,20 +174,6 @@ const FormikPostUploader = () => {
             />
           </View>
           <Divider width={0.2} orientation="horizontal" />
-          <TextInput
-            onChange={(e) => setThumbnailUrl(e.nativeEvent.text)}
-            style={{ color: "white", fontSize: 18 }}
-            placeholder="Enter image url"
-            placeholderTextColor="gray"
-            onChangeText={handleChange("imageUrl")}
-            onBlur={handleBlur("imageUrl")}
-            value={values.imageUrl}
-          />
-          {errors.imageUrl && (
-            <Text style={{ fontSize: 10, color: "red" }}>
-              {errors.imageUrl}
-            </Text>
-          )}
           <Button
             onPress={handleSubmit}
             title="Share"
@@ -156,12 +188,3 @@ const FormikPostUploader = () => {
 export default FormikPostUploader;
 
 const styles = StyleSheet.create({});
-
-{
-  /* <Button
-icon="add-a-photo" mode="contained" style={styles.button}
-onPress={() => {this._pickImage(handleChange('image'))}}
->Pick an image from camera roll</Button>
-{values.image && values.image.length > 0 ?
-<Image source={{ uri: values.image }} style={{ width: 200, height: 200 }} /> : null} */
-}

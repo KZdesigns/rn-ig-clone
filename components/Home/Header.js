@@ -1,9 +1,22 @@
 import { Text, View, Image, StyleSheet, Pressable } from "react-native";
+import { auth } from "../../firebase";
+
+const handleSignOut = async () => {
+  try {
+    auth.signOut();
+    console.log("Signed out!");
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const Header = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Pressable style={({ pressed }) => (pressed ? styles.logoPressed : null)}>
+      <Pressable
+        style={({ pressed }) => (pressed ? styles.logoPressed : null)}
+        onPress={handleSignOut}
+      >
         <Image
           style={styles.logo}
           source={require("../../assets/header-logo.png")}

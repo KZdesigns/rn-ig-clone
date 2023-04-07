@@ -1,15 +1,34 @@
 import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 import { Divider } from "react-native-elements";
 import { PostFooterIcons } from "../../assets/post-footer-icons";
+import { auth, db } from "../../firebase";
+import { doc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 
 const Post = ({ post }) => {
+  const handleLike = async (post) => {
+    const currentLikeStatus = !post.likes_by_users.includes(
+      auth.currentUser.email
+    );
+    try {
+      const userId = auth.currentUser.email;
+      const userRef = doc(db, "users", userId, "posts", post.id);
+      await updateDoc(userRef, {
+        likes_by_users: currentLikeStatus
+          ? arrayUnion(userId)
+          : arrayRemove(userId),
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   return (
     <View style={{ marginBottom: 30 }}>
       <Divider width={1} orientation="vertical" />
       <PostHeader post={post} />
       <PostImage post={post} />
       <View style={{ marginHorizontal: 15, marginTop: 10 }}>
-        <PostFooter post={post} />
+        <PostFooter post={post} handleLike={handleLike} />
         <Likes post={post} />
         <Caption post={post} />
         <CommentsSection post={post} />
@@ -31,7 +50,7 @@ const PostHeader = ({ post }) => (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       <Image source={{ uri: post.profile_picture }} style={styles.story} />
       <Text style={{ color: "white", marginLeft: 5, fontWeight: "bold" }}>
-        {post.user}
+        {post.username}
       </Text>
     </View>
     <Text style={{ color: "white", fontWeight: "bold" }}>...</Text>
@@ -47,13 +66,16 @@ const PostImage = ({ post }) => (
   </View>
 );
 
-const PostFooter = () => (
+const PostFooter = ({ post, handleLike }) => (
   <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
     <View style={styles.leftFooterIconsContainer}>
-      <Icon
-        imageStyle={styles.footerIcon}
-        imageUrl={PostFooterIcons[0].imageUrl}
-      />
+      <Pressable onPress={() => handleLike(post)}>
+        <Image
+          style={styles.footerIcon}
+          source={{ uri: PostFooterIcons[0].imageUrl }}
+        />
+      </Pressable>
+
       <Icon
         imageStyle={styles.footerIcon}
         imageUrl={PostFooterIcons[1].imageUrl}
@@ -81,7 +103,7 @@ const Icon = ({ imageStyle, imageUrl }) => (
 const Likes = ({ post }) => (
   <View style={{ flexDirection: "row", marginTop: 4 }}>
     <Text style={{ color: "white", fontWeight: "bold" }}>
-      {post.likes.toLocaleString("en")} likes
+      {post.likes_by_users.length.toLocaleString("en")} likes
     </Text>
   </View>
 );
@@ -90,7 +112,7 @@ const Caption = ({ post }) => (
   <View style={{ flexDirection: "row", marginTop: 4 }}>
     <Text>
       <Text style={{ color: "white", fontWeight: "bold", marginRight: 4 }}>
-        {post.user}
+        {post.username}
       </Text>
       <Text style={{ color: "white", marginLeft: 4 }}> {post.caption}</Text>
     </Text>
@@ -114,7 +136,7 @@ const Comments = ({ post }) => (
     {post.comments.map((comment, index) => (
       <View key={index} style={{ flexDirection: "row", marginTop: 5 }}>
         <Text style={{ color: "white" }}>
-          <Text style={{ fontWeight: "bold" }}>{comment.user}</Text>{" "}
+          <Text style={{ fontWeight: "bold" }}>{comment.username}</Text>{" "}
           {comment.comment}
         </Text>
       </View>

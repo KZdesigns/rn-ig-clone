@@ -1,9 +1,18 @@
-import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Pressable,
+  Alert,
+} from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import Validator from "email-validator";
 import { useNavigation } from "@react-navigation/native";
+import db from "../../firebase";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const LoginForm = () => {
   const navigation = useNavigation();
@@ -15,6 +24,31 @@ const LoginForm = () => {
       .min(8, "Your password has to have at least 8 characters"),
   });
 
+  const onLogin = async (email, password) => {
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      // Signed in
+      const user = userCredential.user;
+    } catch (error) {
+      Alert.alert("Invalid Log in", error.code, [
+        {
+          text: "Ok",
+          onPress: () => console.log("Ok"),
+          style: "cancel",
+        },
+        {
+          text: "Sign Up",
+          onPress: () => navigation.navigate("SignupScreen"),
+        },
+      ]);
+    }
+  };
+
   const handlesignup = () => {
     navigation.navigate("SignupScreen");
   };
@@ -24,7 +58,7 @@ const LoginForm = () => {
       <Formik
         initialValues={{ email: "", password: "" }}
         onSubmit={(values) => {
-          console.log(values);
+          onLogin(values.email, values.password);
         }}
         validationSchema={LoginFormSchema}
         validateOnMount={true}

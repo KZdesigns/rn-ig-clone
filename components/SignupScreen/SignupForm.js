@@ -1,9 +1,19 @@
-import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Pressable,
+  Alert,
+} from "react-native";
 import React, { useState } from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import Validator from "email-validator";
 import { useNavigation } from "@react-navigation/native";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { db } from "../../firebase";
+import { doc, setDoc } from "firebase/firestore";
 
 const LoginForm = () => {
   const navigation = useNavigation();
@@ -20,12 +30,58 @@ const LoginForm = () => {
       .min(8, "Your password has to have at least 8 characters"),
   });
 
+  const getRandomProfilePicture = async () => {
+    const response = await fetch("https://randomuser.me/api");
+    const data = await response.json();
+    return data.results[0].picture.large;
+  };
+
+  const Onsignup = async (email, password, username) => {
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      // Signed in
+      const user = userCredential.user;
+      if (!user) {
+        throw new Error("was unable to create new user!");
+      }
+      await addUserToFirestore(user, username);
+    } catch (error) {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      Alert.alert("Create Account Unsuccessful", error.code);
+      console.log(error);
+    }
+  };
+
+  const addUserToFirestore = async (user, username) => {
+    try {
+      const profile_picture = await getRandomProfilePicture();
+      if (!profile_picture) {
+        throw new Error("Was unable to find profile picture");
+      }
+      const docRef = await setDoc(doc(db, "users", user.email), {
+        owner_uid: user.uid,
+        username: username,
+        email: user.email,
+        profile_picture: profile_picture,
+      });
+      console.log("Successfully added document");
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  };
+
   return (
     <View style={styles.wrapper}>
       <Formik
         initialValues={{ email: "", username: "", password: "" }}
         onSubmit={(values) => {
-          console.log(values);
+          Onsignup(values.email, values.password, values.username);
         }}
         validationSchema={SignupFormSchema}
         validateOnMount={true}

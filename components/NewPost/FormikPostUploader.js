@@ -1,10 +1,27 @@
-import { Button, Image, StyleSheet, Text, TextInput, View } from "react-native";
-import React, { useState } from "react";
+import {
+  Alert,
+  Button,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import React, { useState, useEffect } from "react";
 import * as Yup from "yup";
 import { Formik } from "formik";
 import { Divider } from "react-native-elements";
 import { ImagePicker } from "expo";
 import { useNavigation } from "@react-navigation/native";
+import { db, auth } from "../../firebase";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  addDoc,
+} from "firebase/firestore";
 
 const uploadPostSchema = Yup.object().shape({
   imageUrl: Yup.string().url().required("A url is required."),
@@ -15,14 +32,65 @@ const PlaceHolderImage = "https://img.icons8.com/ios/256/FFFFFF/image.png";
 
 const FormikPostUploader = () => {
   const [thumbnailUrl, setThumbnailUrl] = useState(PlaceHolderImage);
+  const [currentLoggedInUser, setCurrentLoggedInUser] = useState(null);
   const navigation = useNavigation();
+
+  //set the currentUserState
+  const getUserName = async () => {
+    try {
+      const user = auth.currentUser;
+      const q = query(
+        collection(db, "users"),
+        where("owner_uid", "==", user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        setCurrentLoggedInUser({
+          username: doc.get("username"),
+          profile_picture: doc.get("profile_picture"),
+        });
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //this is going to set the get the current user
+  useEffect(() => {
+    getUserName();
+  }, []);
+
+  //this will need to upload the data to firestore
+  const uploadPostToFirebase = async (imageUrl, caption) => {
+    const data = {
+      imageUrl: imageUrl,
+      username: currentLoggedInUser.username,
+      profile_picture: currentLoggedInUser.profile_picture,
+      owner_uid: auth.currentUser.uid,
+      owner_email: auth.currentUser.email,
+      caption: caption,
+      createdAt: new Date(),
+      likes_by_users: [],
+      comments: [],
+    };
+    try {
+      const userId = auth.currentUser.email;
+      const userRef = doc(db, "users", userId);
+      const docRef = await addDoc(collection(userRef, "posts"), data);
+      navigation.navigate("HomeScreen");
+    } catch (error) {
+      Alert.alert(
+        "Try Again",
+        "Looks like something went wrong, try to upload the photo again."
+      );
+    }
+  };
 
   return (
     <Formik
       initialValues={{ caption: "", imageUrl: "" }}
-      onSubmit={(values) => {
-        console.log(values);
-        navigation.goBack();
+      onSubmit={async (values) => {
+        uploadPostToFirebase(values.imageUrl, values.caption);
       }}
       validationSchema={uploadPostSchema}
       validateOnMount={true}

@@ -11,14 +11,14 @@ const Post = ({ post }) => {
     );
     try {
       const userId = auth.currentUser.email;
-      const userRef = doc(db, "users", userId, "posts", post.id);
+      const userRef = doc(db, "users", post.owner_email, "posts", post.id);
       await updateDoc(userRef, {
         likes_by_users: currentLikeStatus
           ? arrayUnion(userId)
           : arrayRemove(userId),
       });
     } catch (error) {
-      console.log(error.message);
+      console.log("Error in handle like: " + error.message);
     }
   };
 
@@ -72,7 +72,11 @@ const PostFooter = ({ post, handleLike }) => (
       <Pressable onPress={() => handleLike(post)}>
         <Image
           style={styles.footerIcon}
-          source={{ uri: PostFooterIcons[0].imageUrl }}
+          source={{
+            uri: post.likes_by_users.includes(auth.currentUser.email)
+              ? PostFooterIcons[0].likedImageUrl
+              : PostFooterIcons[0].imageUrl,
+          }}
         />
       </Pressable>
 

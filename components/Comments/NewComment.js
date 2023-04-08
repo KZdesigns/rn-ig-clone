@@ -7,12 +7,21 @@ import {
   ScrollView,
   TextInput,
   KeyboardAvoidingView,
-  Button,
 } from "react-native";
 import React, { useState } from "react";
+import {
+  doc,
+  updateDoc,
+  arrayUnion,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+import { auth, db } from "../../firebase";
+import { useNavigation } from "@react-navigation/native";
 
 const NewComment = ({ navigation, post }) => {
-  console.log(post);
   return (
     <View style={styles.container}>
       <Header navigation={navigation} />
@@ -47,8 +56,9 @@ const Header = ({ navigation }) => (
 
 const CommentsSection = ({ post }) => (
   <ScrollView>
-    {post.comments.map((comment) => (
+    {post.comments.map((comment, index) => (
       <View
+        key={index}
         style={{
           alignItems: "flex-start",
           padding: 20,
@@ -67,6 +77,46 @@ const CommentsSection = ({ post }) => (
 
 const AddNewCommentForm = ({ post }) => {
   const [text, onChangeText] = useState(`Add a comment for ${post.username}`);
+  const navigation = useNavigation();
+
+  const getUserName = async () => {
+    try {
+      const user = auth.currentUser;
+      const q = query(
+        collection(db, "users"),
+        where("owner_uid", "==", user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.at(0).get("username");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onAddComment = async (post, text, navigation) => {
+    if (
+      text != "" ||
+      text != `Add a comment for ${post.username}` ||
+      text != null
+    ) {
+      const ref = doc(db, "users", post.owner_email, "posts", post.id);
+      const user = await getUserName();
+      console.log(user);
+      const comment = {
+        user: user,
+        comment: text,
+      };
+      try {
+        await updateDoc(ref, {
+          comments: arrayUnion(comment),
+        });
+        navigation.navigate("HomeScreen");
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+  };
+
   return (
     <View
       style={{
@@ -83,13 +133,19 @@ const AddNewCommentForm = ({ post }) => {
           borderRadius: 50,
           borderBottomColor: "black",
           borderWidth: 1.6,
-          padding: 20,
           flexDirection: "row",
           justifyContent: "space-between",
         }}
       >
-        <TextInput onChangeText={onChangeText} value={text} />
-        <Pressable>
+        <TextInput
+          style={{ padding: 20 }}
+          onChangeText={onChangeText}
+          value={text}
+        />
+        <Pressable
+          onPress={() => onAddComment(post, text, navigation)}
+          style={{ padding: 20 }}
+        >
           <Text style={{ color: "gray" }}>post</Text>
         </Pressable>
       </View>

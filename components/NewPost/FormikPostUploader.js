@@ -46,11 +46,15 @@ const FormikPostUploader = () => {
         where("owner_uid", "==", user.uid)
       );
       const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        setCurrentLoggedInUser({
-          username: doc.get("username"),
-          profile_picture: doc.get("profile_picture"),
-        });
+      // querySnapshot.forEach((doc) => {
+      //   setCurrentLoggedInUser({
+      //     username: doc.get("username"),
+      //     profile_picture: doc.get("profile_picture"),
+      //   });
+      // });
+      setCurrentLoggedInUser({
+        username: querySnapshot.docs.at(0).get("username"),
+        profile_picture: querySnapshot.docs.at(0).get("profile_picture"),
       });
     } catch (error) {
       console.log(error);

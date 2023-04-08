@@ -3,8 +3,14 @@ import { Divider } from "react-native-elements";
 import { PostFooterIcons } from "../../assets/post-footer-icons";
 import { auth, db } from "../../firebase";
 import { doc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { useNavigation } from "@react-navigation/native";
 
 const Post = ({ post }) => {
+  const navigation = useNavigation();
+  const navigateToCommentScreen = () => {
+    navigation.navigate("CommentScreen", { post });
+  };
+
   const handleLike = async (post) => {
     const currentLikeStatus = !post.likes_by_users.includes(
       auth.currentUser.email
@@ -28,7 +34,11 @@ const Post = ({ post }) => {
       <PostHeader post={post} />
       <PostImage post={post} />
       <View style={{ marginHorizontal: 15, marginTop: 10 }}>
-        <PostFooter post={post} handleLike={handleLike} />
+        <PostFooter
+          post={post}
+          handleLike={handleLike}
+          navigation={navigateToCommentScreen}
+        />
         <Likes post={post} />
         <Caption post={post} />
         <CommentsSection post={post} />
@@ -66,7 +76,7 @@ const PostImage = ({ post }) => (
   </View>
 );
 
-const PostFooter = ({ post, handleLike }) => (
+const PostFooter = ({ post, handleLike, navigation }) => (
   <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
     <View style={styles.leftFooterIconsContainer}>
       <Pressable onPress={() => handleLike(post)}>
@@ -80,10 +90,13 @@ const PostFooter = ({ post, handleLike }) => (
         />
       </Pressable>
 
-      <Icon
-        imageStyle={styles.footerIcon}
-        imageUrl={PostFooterIcons[1].imageUrl}
-      />
+      <Pressable onPress={navigation}>
+        <Image
+          style={styles.footerIcon}
+          source={{ uri: PostFooterIcons[1].imageUrl }}
+        />
+      </Pressable>
+
       <Icon
         imageStyle={styles.footerIcon}
         imageUrl={PostFooterIcons[2].imageUrl}
@@ -140,7 +153,7 @@ const Comments = ({ post }) => (
     {post.comments.map((comment, index) => (
       <View key={index} style={{ flexDirection: "row", marginTop: 5 }}>
         <Text style={{ color: "white" }}>
-          <Text style={{ fontWeight: "bold" }}>{comment.username}</Text>{" "}
+          <Text style={{ fontWeight: "bold" }}>{comment.user}</Text>{" "}
           {comment.comment}
         </Text>
       </View>
